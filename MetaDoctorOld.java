@@ -26,11 +26,11 @@ import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class MetaDoctor {
+public class MetaDoctorOld {
 
 	static final int BUFFER = 4096;
 
-	public MetaDoctor(String[] args) {
+	public MetaDoctorOld(String[] args) {
 		
 		extractJar(args[0]);
 		
@@ -100,7 +100,7 @@ public class MetaDoctor {
 
 	public static void main(String[] args) {
 		
-		new MetaDoctor(args);
+		new MetaDoctorOld(args);
 		
 	}
 

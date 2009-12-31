@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="build" name="wizard">
+
+  <property name="src" value="${basedir}"/>  
+  <property name="build" value="${basedir}/build"/>
+
+
+  <target name="clean">
+      <delete dir="${build}" />
+      <delete file="${basedir}/wizard.jar" />
+  </target>  
+  
+  <target name="init">
+      <tstamp/>
+  </target> 
+
+  <target name="prepare" depends="init">
+      <mkdir dir="${build}"/>
+  </target>
+  
+  <target depends="prepare" name="compile"> 
+    <javac destdir="${build}" srcdir="${src}"> 
+    	<include name="**/*.java"/> 
+    </javac> 
+  </target>
+  
+  <target depends="compile" name="copy">
+      <copy todir="${build}/com/nexes/test" file="${src}/com/nexes/test/clouds.jpg"/>
+      <copy todir="${build}/com/nexes/wizard" file="${src}/com/nexes/wizard/wizard.properties"/>
+      <copy todir="${build}/com/nexes/wizard">
+          <fileset dir="${src}/com/nexes/wizard">
+              <include name="**/*.gif"/>
+          </fileset>
+      </copy>
+  </target>
+
+  <target depends="copy" name="jar">
+      <jar jarfile="${basedir}/wizard.jar">
+          <fileset dir="${build}" /> 
+          <manifest>
+              <attribute name="Main-Class" value="com.nexes.test.Main"/>
+          </manifest>
+      </jar>    
+  </target>
+ 
+  <target depends="jar" name="build"/>
+   
+</project>
