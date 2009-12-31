@@ -20,17 +20,30 @@
 package us.ryanhope.metadoctor;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.util.HashMap;
+import java.util.Random;
 
 import javax.swing.JDialog;
 import us.ryanhope.wizard.*;
 
 public class MetaDoctor {
 	
-	static HashMap<String, String> globalData = new HashMap<String, String>();
+	static HashMap<String, String> globalData;
+	static File tempDir;
     
     public static void main(String[] args) {
     	
+    	String globalTmpDir = System.getProperty("java.io.tmpdir");
+    	Random r = new Random();
+
+    	do {
+    		tempDir = new File(globalTmpDir+"/metadoctor-"+Long.toString(Math.abs(r.nextLong()), 36));    			
+    	} while (tempDir.exists());
+    	tempDir.mkdirs();
+    	tempDir.deleteOnExit();
+    	
+    	globalData = new HashMap<String, String>();
     	globalData.put("jarloc", " ");
         
         Wizard wizard = new Wizard();
