@@ -68,11 +68,11 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 	private JSeparator separator;
 	private JLabel textLabel;
 	private JPanel titlePanel;
-	
+
 	private JLabel deviceLabel;
 	private JLabel carrierLabel;
 	private JLabel versionLabel;
-	
+
 	private JLabel jarLabel;
 
 	final DefaultListModel deviceModel = new DefaultListModel();
@@ -80,17 +80,17 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 	final DefaultListModel versionModel = new DefaultListModel();
 
 	private HashMap<String, HashMap<String, TreeMap<String, String>>> jarURLs;
-	
+
 	final JFileChooser fc = new JFileChooser();
-	
+
 	MetaDoctorPanel2Descriptor desc;
 
 	public MetaDoctorPanel2(MetaDoctorPanel2Descriptor desc) {
 
 		super();
-		
+
 		this.desc = desc;
-		
+
 		fc.setAcceptAllFileFilterUsed(false);
 		fc.setFileFilter(new FileFilter() {
 			public String getDescription() {
@@ -129,9 +129,10 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 				}
 			}
 		}
-		
-		jarLabel = new JLabel(" ");
+
+		jarLabel = new JLabel();
 		jarLabel.setFont(jarLabel.getFont().deriveFont(Font.PLAIN, 10));
+		updateJarLabel(null);
 
 		contentPanel = getContentPanel();
 		contentPanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
@@ -219,7 +220,7 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 		newJarPanel.add(Box.createHorizontalStrut(30), BorderLayout.WEST);
 
 		Dimension ld = new Dimension(180,100);
-		
+
 		deviceList = new JList(deviceModel);
 		deviceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		devicePanel = new JScrollPane(deviceList);
@@ -235,7 +236,7 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 		carrierPanel.setHorizontalScrollBarPolicy(ScrollPaneLayout.HORIZONTAL_SCROLLBAR_NEVER);
 		carrierPanel.setMinimumSize(ld);
 		carrierPanel.setPreferredSize(ld);
-		
+
 		versionList = new JList(versionModel);
 		versionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		versionPanel = new JScrollPane(versionList);
@@ -246,18 +247,18 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 		cdvPanel = new JPanel(new BorderLayout());
 		JPanel cdvPanelNorth = new JPanel(new GridLayout(1,3));
 		JPanel cdvPanelSouth = new JPanel(new GridLayout(1,3));
-		
+
 		deviceLabel = new JLabel("Device", JLabel.CENTER);
 		carrierLabel = new JLabel("Carrier", JLabel.CENTER);
 		versionLabel = new JLabel("Version", JLabel.CENTER);
-		
+
 		cdvPanelNorth.add(deviceLabel);
 		cdvPanelNorth.add(carrierLabel);
 		cdvPanelNorth.add(versionLabel);
 		cdvPanelSouth.add(devicePanel);
 		cdvPanelSouth.add(carrierPanel);
 		cdvPanelSouth.add(versionPanel);
-		
+
 		cdvPanel.add(cdvPanelNorth, BorderLayout.NORTH);
 		cdvPanel.add(cdvPanelSouth, BorderLayout.SOUTH);
 
@@ -275,9 +276,9 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 		existingJarPanel.add(filePicker);
 
 		jPanel1.add(existingJarPanel);
-		
+
 		jPanel1.add(Box.createVerticalStrut(30));
-		
+
 		JPanel filePanel = new JPanel(new BorderLayout());
 		Border loweredetched = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		TitledBorder title = BorderFactory.createTitledBorder(loweredetched, "Jar Location");
@@ -286,7 +287,7 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 		//jarLabel.setPreferredSize(new Dimension(200,20));
 		filePanel.add(jarLabel);
 		jPanel1.add(filePanel, BorderLayout.SOUTH);
-		
+
 		contentPanel1.add(jPanel1, BorderLayout.CENTER);
 
 		return contentPanel1;
@@ -299,10 +300,24 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 		return null;
 	}
 
+	private void updateJarLabel(String jarloc) {
+		if (jarloc!=null) {
+			MetaDoctor.globalData.remove("jarloc");
+			MetaDoctor.globalData.put("jarloc", jarloc);
+		}
+		jarLabel.setText(MetaDoctor.globalData.get("jarloc"));
+	}
+
 	public void updateLists(DCV dcv, ListSelectionEvent e) {
 
 		if (dcv==DCV.NONE) {
-			if (firstRunDone) return;
+			if (firstRunDone) {
+				if (newJarRadioButton.isSelected() && !versionList.isSelectionEmpty()) {
+					updateJarLabel(jarURLs.get(deviceList.getSelectedValue()).get(carrierList.getSelectedValue()).get(versionList.getSelectedValue()));
+					desc.getWizard().setNextFinishButtonEnabled(true);
+				}
+				return;
+			}
 			for (String device : jarURLs.keySet())
 				deviceModel.addElement(device);
 			//deviceList.setSelectedIndex(0);
@@ -331,17 +346,17 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 			}
 		} else if (dcv==DCV.VERSION) {
 			if (versionList.isSelectionEmpty()) {
-				jarLabel.setText(" ");
+				updateJarLabel(" ");
 				desc.getWizard().setNextFinishButtonEnabled(false);
 			} else if (!e.getValueIsAdjusting()) {
-				jarLabel.setText(jarURLs.get(deviceList.getSelectedValue()).get(carrierList.getSelectedValue()).get(versionList.getSelectedValue()));
+				updateJarLabel(jarURLs.get(deviceList.getSelectedValue()).get(carrierList.getSelectedValue()).get(versionList.getSelectedValue()));
 				desc.getWizard().setNextFinishButtonEnabled(true);
 			}
 		}
 
 	}
 
-	public void enabledisable() {
+	public void enabledisable(boolean action) {
 		if (newJarRadioButton.isSelected()) {
 			deviceList.setEnabled(true);
 			carrierList.setEnabled(true);
@@ -359,16 +374,18 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 			versionLabel.setEnabled(false);
 			filePicker.setEnabled(true);
 		}
-		jarLabel.setText(" ");
-		desc.getWizard().setNextFinishButtonEnabled(false);
+		if (action) {
+			updateJarLabel(" ");
+			desc.getWizard().setNextFinishButtonEnabled(false);
+		}
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		int returnVal = fc.showOpenDialog(contentPanel);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File file = fc.getSelectedFile();
-            jarLabel.setText(file.getAbsolutePath());
-            desc.getWizard().setNextFinishButtonEnabled(true);  
+			File file = fc.getSelectedFile();
+			updateJarLabel(file.getAbsolutePath());
+			desc.getWizard().setNextFinishButtonEnabled(true);  
 		}
 	}
 

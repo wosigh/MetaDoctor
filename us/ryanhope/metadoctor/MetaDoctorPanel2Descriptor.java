@@ -58,12 +58,13 @@ public class MetaDoctorPanel2Descriptor extends WizardPanelDescriptor implements
 	}
 
 	public void aboutToDisplayPanel() {
-		panel2.enabledisable();
+		//System.out.println(MetaDoctor.globalData.get("jarloc"));
+		panel2.enabledisable(false);
 		panel2.updateLists(DCV.NONE, null);
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		panel2.enabledisable();
+		panel2.enabledisable(true);
 	}	
 
 }

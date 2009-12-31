@@ -20,13 +20,18 @@
 package us.ryanhope.metadoctor;
 
 import java.awt.Dimension;
+import java.util.HashMap;
 
 import javax.swing.JDialog;
 import us.ryanhope.wizard.*;
 
 public class MetaDoctor {
+	
+	static HashMap<String, String> globalData = new HashMap<String, String>();
     
     public static void main(String[] args) {
+    	
+    	globalData.put("jarloc", " ");
         
         Wizard wizard = new Wizard();
         
