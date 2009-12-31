@@ -34,13 +34,12 @@ public class MetaDoctorPanel2Descriptor extends WizardPanelDescriptor implements
 
 	public MetaDoctorPanel2Descriptor() {
 
-		panel2 = new MetaDoctorPanel2();
+		panel2 = new MetaDoctorPanel2(this);
 		panel2.addActionListeners(this);
-		
 		for (final DCV dcv : DCV.values()) {
 			panel2.addListSelectionListener(dcv, new ListSelectionListener() {
 				public void valueChanged(ListSelectionEvent e) {
-					panel2.updateLists(dcv);
+					panel2.updateLists(dcv, e);
 				}
 			});
 		}
@@ -58,16 +57,13 @@ public class MetaDoctorPanel2Descriptor extends WizardPanelDescriptor implements
 		return MetaDoctorPanel1Descriptor.IDENTIFIER;
 	}
 
-
 	public void aboutToDisplayPanel() {
 		panel2.enabledisable();
-		panel2.updateLists(DCV.DEVICE);
-	}    
-
+		panel2.updateLists(DCV.NONE, null);
+	}
+	
 	public void actionPerformed(ActionEvent e) {
 		panel2.enabledisable();
-	}
-
-	
+	}	
 
 }

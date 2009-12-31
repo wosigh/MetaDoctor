@@ -19,6 +19,8 @@
 
 package us.ryanhope.metadoctor;
 
+import java.awt.Dimension;
+
 import javax.swing.JDialog;
 import us.ryanhope.wizard.*;
 
@@ -29,7 +31,7 @@ public class MetaDoctor {
         Wizard wizard = new Wizard();
         
         JDialog dialog = wizard.getDialog();
-        //dialog.setSize(640,480);        
+        dialog.setPreferredSize(new Dimension(640,480));        
         dialog.setTitle("Webos Internals MetaDoctor");
         
         WizardPanelDescriptor descriptor1 = new MetaDoctorPanel1Descriptor();

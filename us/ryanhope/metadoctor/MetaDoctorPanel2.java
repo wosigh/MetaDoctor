@@ -21,22 +21,27 @@ package us.ryanhope.metadoctor;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.TreeSet;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
+import java.util.TreeMap;
 
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
 
-public class MetaDoctorPanel2 extends JPanel {
+public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 
+	private boolean firstRunDone = false;
+
 	enum DCV {
+		NONE,
 		DEVICE,
 		CARRIER,
 		VERSION
@@ -63,44 +68,70 @@ public class MetaDoctorPanel2 extends JPanel {
 	private JSeparator separator;
 	private JLabel textLabel;
 	private JPanel titlePanel;
+	
+	private JLabel deviceLabel;
+	private JLabel carrierLabel;
+	private JLabel versionLabel;
+	
+	private JLabel jarLabel;
 
 	final DefaultListModel deviceModel = new DefaultListModel();
 	final DefaultListModel carrierModel = new DefaultListModel();
 	final DefaultListModel versionModel = new DefaultListModel();
 
-	private HashMap<String, HashMap<String, TreeSet<String>>> jarURLs;
+	private HashMap<String, HashMap<String, TreeMap<String, String>>> jarURLs;
+	
+	final JFileChooser fc = new JFileChooser();
+	
+	MetaDoctorPanel2Descriptor desc;
 
-	public MetaDoctorPanel2() {
+	public MetaDoctorPanel2(MetaDoctorPanel2Descriptor desc) {
 
 		super();
+		
+		this.desc = desc;
+		
+		fc.setAcceptAllFileFilterUsed(false);
+		fc.setFileFilter(new FileFilter() {
+			public String getDescription() {
+				return "*.jar";
+			}
+			public boolean accept(File f) {
+				return f.getName().endsWith(".jar");
+			}
+		});
 
-		jarURLs = new HashMap<String, HashMap<String, TreeSet<String>>>();
+		jarURLs = new HashMap<String, HashMap<String, TreeMap<String, String>>>();
 
 		PropertyResourceBundle urls = (PropertyResourceBundle)
 		ResourceBundle.getBundle("us.ryanhope.metadoctor.jar-urls");
 		Enumeration<String> e = urls.getKeys();
 		while (e.hasMoreElements()){
-			String[] components = e.nextElement().split("-");
-			HashMap<String, TreeSet<String>> carrier;
-			TreeSet<String> versions;
+			String key = e.nextElement();
+			String[] components = key.split("-");
+			HashMap<String, TreeMap<String, String>> carrier;
+			TreeMap<String, String> versions;
 			if (!jarURLs.containsKey(components[0])) {
-				carrier = new HashMap<String, TreeSet<String>>();
-				versions = new TreeSet<String>();
-				versions.add(components[2]);
+				carrier = new HashMap<String, TreeMap<String, String>>();
+				versions = new TreeMap<String, String>();
+				versions.put(components[2], urls.getString(key));
 				carrier.put(components[1], versions);
 				jarURLs.put(components[0], carrier);
 			} else {
 				carrier = jarURLs.get(components[0]);
 				if (!carrier.containsKey(components[1])) {
-					versions = new TreeSet<String>();
-					versions.add(components[2]);
+					versions = new TreeMap<String, String>();
+					versions.put(components[2], urls.getString(key));
 					carrier.put(components[1], versions);		
 				} else {
 					versions = carrier.get(components[1]);
-					versions.add(components[2]);
+					versions.put(components[2], urls.getString(key));
 				}
 			}
 		}
+		
+		jarLabel = new JLabel(" ");
+		jarLabel.setFont(jarLabel.getFont().deriveFont(Font.PLAIN, 10));
 
 		contentPanel = getContentPanel();
 		contentPanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
@@ -148,7 +179,7 @@ public class MetaDoctorPanel2 extends JPanel {
 		case DEVICE: deviceList.addListSelectionListener(l); break;
 		case CARRIER: carrierList.addListSelectionListener(l); break;
 		case VERSION: versionList.addListSelectionListener(l); break;
-		}
+		}	
 	}
 
 	public String getRadioButtonSelected() {
@@ -187,23 +218,48 @@ public class MetaDoctorPanel2 extends JPanel {
 		newJarPanel.add(newJarRadioButton, BorderLayout.NORTH);
 		newJarPanel.add(Box.createHorizontalStrut(30), BorderLayout.WEST);
 
+		Dimension ld = new Dimension(180,100);
+		
 		deviceList = new JList(deviceModel);
+		deviceList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		devicePanel = new JScrollPane(deviceList);
+		devicePanel.setHorizontalScrollBarPolicy(ScrollPaneLayout.HORIZONTAL_SCROLLBAR_NEVER);
+		devicePanel.setMinimumSize(ld);
+		devicePanel.setPreferredSize(ld);
 
 		carrierList = new JList(carrierModel);
-		carrierList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		carrierList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		carrierList.setLayoutOrientation(JList.VERTICAL);
 		carrierList.setVisibleRowCount(jarURLs.keySet().size());
 		carrierPanel = new JScrollPane(carrierList);
-
+		carrierPanel.setHorizontalScrollBarPolicy(ScrollPaneLayout.HORIZONTAL_SCROLLBAR_NEVER);
+		carrierPanel.setMinimumSize(ld);
+		carrierPanel.setPreferredSize(ld);
+		
 		versionList = new JList(versionModel);
+		versionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		versionPanel = new JScrollPane(versionList);
+		versionPanel.setHorizontalScrollBarPolicy(ScrollPaneLayout.HORIZONTAL_SCROLLBAR_NEVER);
+		versionPanel.setMinimumSize(ld);
+		versionPanel.setPreferredSize(ld);
 
-		cdvPanel = new JPanel();
-		cdvPanel.setLayout(new BoxLayout(cdvPanel, BoxLayout.LINE_AXIS));
-		cdvPanel.add(devicePanel);
-		cdvPanel.add(carrierPanel);
-		cdvPanel.add(versionPanel);
+		cdvPanel = new JPanel(new BorderLayout());
+		JPanel cdvPanelNorth = new JPanel(new GridLayout(1,3));
+		JPanel cdvPanelSouth = new JPanel(new GridLayout(1,3));
+		
+		deviceLabel = new JLabel("Device", JLabel.CENTER);
+		carrierLabel = new JLabel("Carrier", JLabel.CENTER);
+		versionLabel = new JLabel("Version", JLabel.CENTER);
+		
+		cdvPanelNorth.add(deviceLabel);
+		cdvPanelNorth.add(carrierLabel);
+		cdvPanelNorth.add(versionLabel);
+		cdvPanelSouth.add(devicePanel);
+		cdvPanelSouth.add(carrierPanel);
+		cdvPanelSouth.add(versionPanel);
+		
+		cdvPanel.add(cdvPanelNorth, BorderLayout.NORTH);
+		cdvPanel.add(cdvPanelSouth, BorderLayout.SOUTH);
 
 		newJarPanel.add(cdvPanel);
 
@@ -215,19 +271,23 @@ public class MetaDoctorPanel2 extends JPanel {
 		existingJarPanel.add(Box.createHorizontalStrut(30), BorderLayout.WEST);
 
 		filePicker = new JButton("Choose file");
+		filePicker.addActionListener(this);
 		existingJarPanel.add(filePicker);
 
 		jPanel1.add(existingJarPanel);
-
-		//jCheckBox1.setText("I agree to laugh at people who chose options other than mine");
-		//jPanel1.add(jCheckBox1);
-
+		
+		jPanel1.add(Box.createVerticalStrut(30));
+		
+		JPanel filePanel = new JPanel(new BorderLayout());
+		Border loweredetched = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+		TitledBorder title = BorderFactory.createTitledBorder(loweredetched, "Jar Location");
+		title.setTitleJustification(TitledBorder.LEFT);
+		filePanel.setBorder(title);
+		//jarLabel.setPreferredSize(new Dimension(200,20));
+		filePanel.add(jarLabel);
+		jPanel1.add(filePanel, BorderLayout.SOUTH);
+		
 		contentPanel1.add(jPanel1, BorderLayout.CENTER);
-
-		contentPanel1.add(Box.createHorizontalStrut(20), BorderLayout.WEST);
-
-		//jLabel1.setText("Note that the 'Next' button is disabled until you check the box above.");
-		//contentPanel1.add(jLabel1, java.awt.BorderLayout.SOUTH);
 
 		return contentPanel1;
 	}
@@ -239,66 +299,76 @@ public class MetaDoctorPanel2 extends JPanel {
 		return null;
 	}
 
-	public void updateLists(DCV dcv) {
+	public void updateLists(DCV dcv, ListSelectionEvent e) {
 
-		switch (dcv) {
-		case DEVICE:
-			if (deviceModel.isEmpty()) {
-				for (String device : jarURLs.keySet())
-					deviceModel.addElement(device);
-				deviceList.setSelectedIndex(0);
-			} else {
-				versionModel.removeAllElements();
+		if (dcv==DCV.NONE) {
+			if (firstRunDone) return;
+			for (String device : jarURLs.keySet())
+				deviceModel.addElement(device);
+			//deviceList.setSelectedIndex(0);
+			firstRunDone = true;
+		} else if (dcv==DCV.DEVICE) {
+			if (!e.getValueIsAdjusting()) {
 				carrierModel.removeAllElements();
-				HashMap<String, TreeSet<String>> carriers = jarURLs.get(deviceList.getSelectedValue());
-				for (String carrier : carriers.keySet()) {
+				versionModel.removeAllElements();
+				HashMap<String, TreeMap<String, String>> carriers = jarURLs.get(deviceList.getSelectedValue());
+				for (String carrier : carriers.keySet())
 					carrierModel.addElement(carrier);
-				}
-				if (carrierList.isSelectionEmpty())
-					carrierList.setSelectedIndex(0);
-				Iterator<String> versions = carriers.get(carrierList.getSelectedValue()).descendingIterator();
-				while (versions.hasNext())
-					versionModel.addElement(versions.next());
-				if (versionList.isSelectionEmpty())
-					versionList.setSelectedIndex(0);
+				//carrierList.setSelectedIndex(0);
 			}
-			break;
-		case CARRIER:
-			versionModel.removeAllElements();
-			Iterator<String> versions = jarURLs.get(deviceList.getSelectedValue()).get(carrierList.getSelectedValue()).descendingIterator();
-			while (versions.hasNext())
-				versionModel.addElement(versions.next());
-			if (versionList.isSelectionEmpty())
-				versionList.setSelectedIndex(0);
-			
-			break;
-		case VERSION:
-			break;
+		} else if (dcv==DCV.CARRIER) {
+			if (!e.getValueIsAdjusting()) {
+				versionModel.removeAllElements();
+				if (!carrierModel.isEmpty()) {
+					if (carrierList.isSelectionEmpty())
+						carrierList.setSelectedIndex(0);
+					if (versionModel.isEmpty()) {
+						for (String version : jarURLs.get(deviceList.getSelectedValue()).get(carrierList.getSelectedValue()).keySet())
+							versionModel.addElement(version);
+						//versionList.setSelectedIndex(0);
+					}
+				}
+			}
+		} else if (dcv==DCV.VERSION) {
+			if (versionList.isSelectionEmpty()) {
+				jarLabel.setText(" ");
+				desc.getWizard().setNextFinishButtonEnabled(false);
+			} else if (!e.getValueIsAdjusting()) {
+				jarLabel.setText(jarURLs.get(deviceList.getSelectedValue()).get(carrierList.getSelectedValue()).get(versionList.getSelectedValue()));
+				desc.getWizard().setNextFinishButtonEnabled(true);
+			}
 		}
 
-
-		/*
-		HashMap<String, TreeSet<String>> carriers = jarURLs.get(deviceList.getSelectedValue());
-		for (String carrier : carriers.keySet()) {
-			carrierModel.addElement(carrier);
-			TreeSet<String> versions = carriers.get(carrier);
-			versionModel.removeAllElements();
-			for (String version : versions)
-				versionModel.addElement(version);
-		}
-		if (carrierList.isSelectionEmpty())
-			System.out.println("Empty carrier list");*/
 	}
 
 	public void enabledisable() {
 		if (newJarRadioButton.isSelected()) {
+			deviceList.setEnabled(true);
 			carrierList.setEnabled(true);
 			versionList.setEnabled(true);
+			deviceLabel.setEnabled(true);
+			carrierLabel.setEnabled(true);
+			versionLabel.setEnabled(true);
 			filePicker.setEnabled(false);
 		} else if (existingJarRadioButton.isSelected()) {
+			deviceList.setEnabled(false);
 			carrierList.setEnabled(false);
 			versionList.setEnabled(false);
+			deviceLabel.setEnabled(false);
+			carrierLabel.setEnabled(false);
+			versionLabel.setEnabled(false);
 			filePicker.setEnabled(true);
+		}
+		jarLabel.setText(" ");
+		desc.getWizard().setNextFinishButtonEnabled(false);
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		int returnVal = fc.showOpenDialog(contentPanel);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+            jarLabel.setText(file.getAbsolutePath());
+            desc.getWizard().setNextFinishButtonEnabled(true);  
 		}
 	}
 
