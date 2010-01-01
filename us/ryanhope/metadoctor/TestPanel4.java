@@ -7,7 +7,7 @@ import java.awt.event.*;
 
 import us.ryanhope.wizard.*;
 
-public class TestPanel3 extends JPanel {
+public class TestPanel4 extends JPanel {
  
     private JLabel anotherBlankSpace;
     private JLabel blankSpace;
@@ -25,7 +25,7 @@ public class TestPanel3 extends JPanel {
     private JLabel textLabel;
     private JPanel titlePanel;
         
-    public TestPanel3() {
+    public TestPanel4() {
         
         super();
                 
@@ -43,6 +43,7 @@ public class TestPanel3 extends JPanel {
         titlePanel.setBackground(Color.gray);
         
         textLabel.setBackground(Color.gray);
+        textLabel.setForeground(Color.white);
         textLabel.setFont(new Font("MS Sans Serif", Font.BOLD, 14));
         textLabel.setText("Pretending To Connect To Server");
         textLabel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));

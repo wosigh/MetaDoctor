@@ -25,12 +25,18 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.MissingResourceException;
+import java.util.PropertyResourceBundle;
 import java.util.Random;
+import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import us.ryanhope.wizard.*;
 
@@ -39,6 +45,9 @@ public class MetaDoctor {
 	static HashMap<String, String> globalData;
 	static File tempDir;
 	static final int BUFFER = 4096;
+	
+	static Icon EDIT_ADD_ICON;
+    static Icon EDIT_REMOVE_ICON;
 
 	static int extractJar(String filename) {
 
@@ -99,6 +108,20 @@ public class MetaDoctor {
 		return ret;
 
 	}
+	
+    private static Object getImage(String name) {
+
+        URL url = null;
+
+        try {
+            Class c = Class.forName("us.ryanhope.metadoctor.MetaDoctor");
+            url = c.getResource(name);
+        } catch (ClassNotFoundException cnfe) {
+            System.err.println("Unable to find MetaDoctor class");
+        }
+        return url;
+
+    }
 
 	public static void main(String[] args) {
 
@@ -114,6 +137,20 @@ public class MetaDoctor {
 		globalData = new HashMap<String, String>();
 		globalData.put("jarloc", " ");
 
+
+		try { 
+
+			PropertyResourceBundle resources = (PropertyResourceBundle)
+			ResourceBundle.getBundle("us.ryanhope.metadoctor.metadoctor");
+
+			EDIT_ADD_ICON = new ImageIcon((URL)getImage((String)(resources.getObject("editAddButtonIcon"))));
+			EDIT_REMOVE_ICON = new ImageIcon((URL)getImage((String)(resources.getObject("editRemoveButtonIcon"))));
+
+		} catch (MissingResourceException mre) {
+			System.out.println(mre);
+			System.exit(1);
+		}
+
 		Wizard wizard = new Wizard();
 
 		JDialog dialog = wizard.getDialog();
@@ -123,14 +160,16 @@ public class MetaDoctor {
 		WizardPanelDescriptor descriptor1 = new MetaDoctorPanel1Descriptor();
 		wizard.registerWizardPanel(MetaDoctorPanel1Descriptor.IDENTIFIER, descriptor1);
 
-
 		WizardPanelDescriptor descriptor2 = new MetaDoctorPanel2Descriptor();
 		wizard.registerWizardPanel(MetaDoctorPanel2Descriptor.IDENTIFIER, descriptor2);
 
-		WizardPanelDescriptor descriptor3 = new TestPanel3Descriptor();
-		wizard.registerWizardPanel(TestPanel3Descriptor.IDENTIFIER, descriptor3);
+		WizardPanelDescriptor descriptor3 = new MetaDoctorPanel3Descriptor();
+		wizard.registerWizardPanel(MetaDoctorPanel3Descriptor.IDENTIFIER, descriptor3);
 
-		wizard.setCurrentPanel(MetaDoctorPanel1Descriptor.IDENTIFIER);
+		WizardPanelDescriptor descriptor4 = new TestPanel4Descriptor();
+		wizard.registerWizardPanel(TestPanel4Descriptor.IDENTIFIER, descriptor4);
+
+		wizard.setCurrentPanel(MetaDoctorPanel3Descriptor.IDENTIFIER);
 
 		int ret = wizard.showModalDialog();
 

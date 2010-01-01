@@ -30,7 +30,7 @@ public class MetaDoctorPanel1Descriptor extends WizardPanelDescriptor {
     }
     
     public Object getNextPanelDescriptor() {
-        return TestPanel2DescriptorOld.IDENTIFIER;
+        return MetaDoctorPanel2Descriptor.IDENTIFIER;
     }
     
     public Object getBackPanelDescriptor() {

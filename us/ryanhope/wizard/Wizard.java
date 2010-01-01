@@ -416,9 +416,7 @@ public class Wizard extends WindowAdapter implements PropertyChangeListener {
     public void windowClosing(WindowEvent e) {
         returnCode = CANCEL_RETURN_CODE;
     }
-    
-    
-    
+        
     static {
 
         try { 

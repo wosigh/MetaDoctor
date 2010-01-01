@@ -150,6 +150,7 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 		titlePanel.setBackground(Color.gray);
 
 		textLabel.setBackground(Color.gray);
+		textLabel.setForeground(Color.white);
 		textLabel.setFont(textLabel.getFont().deriveFont(Font.BOLD, 14));
 		textLabel.setText("Base Webos Doctor");
 		textLabel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
@@ -309,6 +310,9 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 	}
 
 	public void updateLists(DCV dcv, ListSelectionEvent e) {
+		
+		if (MetaDoctor.globalData.get("jarloc").trim().length()==0)
+			desc.getWizard().setNextFinishButtonEnabled(false);
 
 		if (dcv==DCV.NONE) {
 			if (firstRunDone) {
@@ -365,6 +369,15 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 			carrierLabel.setEnabled(true);
 			versionLabel.setEnabled(true);
 			filePicker.setEnabled(false);
+			if (action) {
+				if (!versionList.isSelectionEmpty()) {
+					updateJarLabel(jarURLs.get(deviceList.getSelectedValue()).get(carrierList.getSelectedValue()).get(versionList.getSelectedValue()));
+					desc.getWizard().setNextFinishButtonEnabled(true);
+				} else {
+					updateJarLabel(" ");
+					desc.getWizard().setNextFinishButtonEnabled(false);
+				}
+			}
 		} else if (existingJarRadioButton.isSelected()) {
 			deviceList.setEnabled(false);
 			carrierList.setEnabled(false);
@@ -373,11 +386,17 @@ public class MetaDoctorPanel2 extends JPanel implements ActionListener {
 			carrierLabel.setEnabled(false);
 			versionLabel.setEnabled(false);
 			filePicker.setEnabled(true);
-		}
-		if (action) {
-			updateJarLabel(" ");
-			desc.getWizard().setNextFinishButtonEnabled(false);
-		}
+			if (action) {
+				File file = fc.getSelectedFile();
+				if (file!=null) {
+					updateJarLabel(file.getAbsolutePath());
+					desc.getWizard().setNextFinishButtonEnabled(true);
+				} else {
+					updateJarLabel(" ");
+					desc.getWizard().setNextFinishButtonEnabled(false);
+				}
+			}
+		}		
 	}
 
 	public void actionPerformed(ActionEvent e) {

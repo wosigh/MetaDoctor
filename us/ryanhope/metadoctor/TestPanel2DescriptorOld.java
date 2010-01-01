@@ -24,7 +24,7 @@ public class TestPanel2DescriptorOld extends WizardPanelDescriptor implements Ac
     }
     
     public Object getNextPanelDescriptor() {
-        return TestPanel3Descriptor.IDENTIFIER;
+        return TestPanel4Descriptor.IDENTIFIER;
     }
     
     public Object getBackPanelDescriptor() {

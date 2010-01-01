@@ -19,52 +19,40 @@
 
 package us.ryanhope.metadoctor;
 
-import us.ryanhope.metadoctor.MetaDoctorPanel2.DCV;
 import us.ryanhope.wizard.*;
 import java.awt.event.*;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class MetaDoctorPanel2Descriptor extends WizardPanelDescriptor implements ActionListener {
+public class MetaDoctorPanel3Descriptor extends WizardPanelDescriptor implements ActionListener {
 
-	public static final String IDENTIFIER = "CHOOSE_JAR_PANEL";
+	public static final String IDENTIFIER = "CONFIGURE";
 
-	MetaDoctorPanel2 panel2;
+	MetaDoctorPanel3 panel3;
 
-	public MetaDoctorPanel2Descriptor() {
+	public MetaDoctorPanel3Descriptor() {
 
-		panel2 = new MetaDoctorPanel2(this);
-		panel2.addActionListeners(this);
-		for (final DCV dcv : DCV.values()) {
-			panel2.addListSelectionListener(dcv, new ListSelectionListener() {
-				public void valueChanged(ListSelectionEvent e) {
-					panel2.updateLists(dcv, e);
-				}
-			});
-		}
+		panel3 = new MetaDoctorPanel3(this);
+		panel3.addActionListeners(this);
 
 		setPanelDescriptorIdentifier(IDENTIFIER);
-		setPanelComponent(panel2);
+		setPanelComponent(panel3);
 
 	}
 
 	public Object getNextPanelDescriptor() {
-		
-		return MetaDoctorPanel3Descriptor.IDENTIFIER;
+		return TestPanel4Descriptor.IDENTIFIER;
 	}
 
 	public Object getBackPanelDescriptor() {
-		return MetaDoctorPanel1Descriptor.IDENTIFIER;
+		return MetaDoctorPanel2Descriptor.IDENTIFIER;
 	}
 
 	public void aboutToDisplayPanel() {
-		panel2.enabledisable(false);
-		panel2.updateLists(DCV.NONE, null);
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		panel2.enabledisable(true);
 	}	
 
 }
